@@ -1,12 +1,14 @@
 # Fourthorder #
 
-The Fourthorder scripts were derived from the thirdorder scripts, which are used to help users of [ShengBTE containing four-phonon modules] create FORCE\_CONSTANTS\_4TH files in an efficient and convenient manner. More specifically, it performs two tasks:
 
 Zherui Han <zrhan@purdue.edu>
 Xiaolong Yang <xiaolongyang1990@gmail.com>
 Wu Li <wu.li.phys2011@gmail.com>
 Tianli Feng <Tianli.Feng2011@gmail.com>
 Xiulin Ruan <ruan@purdue.edu>
+
+
+The Fourthorder scripts were derived from the thirdorder scripts, which are used to help users of [ShengBTE containing four-phonon modules] create FORCE\_CONSTANTS\_4TH files in an efficient and convenient manner. More specifically, it performs two tasks:
 
 1) It resolves an irreducible set of atomic displacements from which to compute the full anharmonic fourth-order interatomic force constant (IFC) matrix. The displaced supercells are saved to input files that can be fed to first-principles DFT codes for calculating the forces arising from the atomic displacements. Currently supported DFT codes are VASP (Fourthorder_vasp.py), and Quantum ESPRESSO (Fourthorder_espresso.py).
 
