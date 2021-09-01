@@ -475,7 +475,7 @@ if __name__=="__main__":
             os.path.basename(sfilename))
         write_supercell(sfilename,sposcar,"BASE.{0}".format(
                 os.path.basename(sfilename)),0)
-        width=len(str(4*(len(list4)+1)))
+        width=len(str(4*(len(list6)+1)))
         namepattern="DISP.{0}.{{0:0{1}d}}".format(os.path.basename(sfilename),
                                                 width)
         print "Writing displaced coordinates to DISP.{0}.*".format(
@@ -485,15 +485,13 @@ if __name__=="__main__":
                 isign=(-1)**(n//4)
                 jsign=(-1)**(n%4//2)
                 ksign=(-1)**(n%2)
-                print e[2],e[5],isign,e[1],e[4],jsign,e[0],e[3],ksign
+             #   print e[2],e[5],isign,e[1],e[4],jsign,e[0],e[3],ksign
                 # Start numbering the files at 1 for aesthetic
                 # reasons.
                 number=nirred*n+i+1
-                dsposcar=normalize_SPOSCAR(
-                    move_three_atoms(sposcar,
-                                   e[2],e[5],isign*H,
+                dsposcar=move_three_atoms(sposcar,e[2],e[5],isign*H,
                                    e[1],e[4],jsign*H,
-                                   e[0],e[3],ksign*H))
+                                   e[0],e[3],ksign*H)
                 filename=namepattern.format(number)
                 write_supercell(sfilename,dsposcar,filename,number)
     else:
