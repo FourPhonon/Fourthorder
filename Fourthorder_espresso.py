@@ -475,7 +475,7 @@ if __name__=="__main__":
             os.path.basename(sfilename))
         write_supercell(sfilename,sposcar,"BASE.{0}".format(
                 os.path.basename(sfilename)),0)
-        width=len(str(4*(len(list6)+1)))
+        width=len(str(8*(len(list6)+1)))
         namepattern="DISP.{0}.{{0:0{1}d}}".format(os.path.basename(sfilename),
                                                 width)
         print "Writing displaced coordinates to DISP.{0}.*".format(
