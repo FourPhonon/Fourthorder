@@ -395,14 +395,18 @@ def read_forces(filename):
     Read a set of forces on atoms from filename, presumably in
     Quantum Espresso's output format. Units: eV/nm
     """
-    nruter=[]
-    with open(filename,"r") as f:
+    nruter = []
+    with open(filename, "r") as f:
         for l in f:
-            fields=l.split()
-            if len(fields)==9 and fields[0]=="atom" and fields[4]=="force":
+            fields = l.split()
+            if len(fields
+                   ) == 9 and fields[0] == "atom" and fields[4] == "force":
                 nruter.append([float(i) for i in fields[6:]])
-    nruter=np.array(nruter)*RYDBERG/BOHR_RADIUS
+            elif fields[-3:] == ["contrib.", "to", "forces"]:
+                break
+    nruter = np.array(nruter) * RYDBERG / BOHR_RADIUS
     return nruter
+
 
 
 if __name__=="__main__":
@@ -528,7 +532,7 @@ if __name__=="__main__":
                 jsign=(-1)**(n%4//2)
                 ksign=(-1)**(n%2)
                 number=nirred*n+i
-                phipart[:,i,:]-=isign*jsign*ksign*forces[number].T
+                phipart[:,i,:]-=isign * jsign * ksign * forces[number].T  
         phipart/=(8000.*H*H*H)
         print "Reconstructing the full matrix"
         phifull=Fourthorder_core.reconstruct_ifcs(phipart,wedge,list6,poscar,sposcar)
