@@ -533,7 +533,7 @@ if __name__=="__main__":
                 ksign=(-1)**(n%2)
                 number=nirred*n+i
                 phipart[:,i,:]-=isign * jsign * ksign * forces[number].T  
-        phipart/=(8000.*H*H*H)
+        phipart/=(80000.*H*H*H)
         print "Reconstructing the full matrix"
         phifull=Fourthorder_core.reconstruct_ifcs(phipart,wedge,list6,poscar,sposcar)
         print "Writing the constants to FORCE_CONSTANTS_4TH"
