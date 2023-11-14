@@ -14,6 +14,8 @@ The Fourthorder scripts were derived from the thirdorder scripts, which are used
 
 2) From the output files created by the DFT code, Fourthorder reconstructs the full fourth-order IFC matrix and writes it in the right format to FORCE\_CONSTANTS\_4TH.
 
+*We suggest that users test the convergence of 4th-IFCs with respect to the finite displacement (H). You can modify the header of Fourthorder_common.py to manually change H.*
+
 # Compilation #
 
 Fourthorder is a set of Python scripts. It was developed using Python 2.7.3, but should work with slightly older versions. In addition to the modules in Python's standard library, the numpy and scipy numerical libraries are required. Moreover, this script relies on a module, Fourthorder\_core, which is written in Cython. Thus, in spite of Python being an interpreted language, a compilation step is needed. Note that in addition to the .pyx source we also distribute the intermediate .c file, so Cython itself is not needed. The only requirements are a C compiler, the Python development package and Atsushi Togo's [spglib](http://spglib.sourceforge.net/).
