@@ -19,7 +19,6 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 from __future__ import print_function
 try:
     xrange
@@ -30,14 +29,14 @@ import os.path
 import glob
 try:
     from lxml import etree as ElementTree
-    xmllib="lxml.etree"
+    xmllib = "lxml.etree"
 except ImportError:
     try:
         import xml.etree.cElementTree as ElementTree
-        xmllib="cElementTree"
+        xmllib = "cElementTree"
     except ImportError:
         import xml.etree.ElementTree as ElementTree
-        xmllib="ElementTree"
+        xmllib = "ElementTree"
 try:
     import cStringIO as StringIO
 except ImportError:
@@ -47,9 +46,10 @@ except ImportError:
         import io as StringIO
 try:
     import hashlib
-    hashes=True
+    hashes = True
 except ImportError:
-    hashes=False
+    hashes = False
+
 
 import Fourthorder_core
 from Fourthorder_common import *
@@ -118,13 +118,14 @@ def write_POSCAR(poscar,filename):
         toencode = f.getvalue()
         if sys.hexversion >= 0x3000000:
             toencode = toencode.encode("utf-8")
-        header=hashlib.sha1(toencode).hexdigest()
+        header = hashlib.sha1(toencode).hexdigest()
     else:
-        header=filename
-    with open(filename,"w") as finalf:
+        header = filename
+    with open(filename, "w") as finalf:
         finalf.write("{0}\n".format(header))
         finalf.write(f.getvalue())
     f.close()
+
 
 
 def normalize_SPOSCAR(sposcar):
