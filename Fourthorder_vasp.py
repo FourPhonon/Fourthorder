@@ -19,28 +19,37 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
+from __future__ import print_function
+try:
+    xrange
+except NameError:
+    xrange = range
+import sys
 import os.path
 import glob
 try:
     from lxml import etree as ElementTree
-    xmllib="lxml.etree"
+    xmllib = "lxml.etree"
 except ImportError:
     try:
         import xml.etree.cElementTree as ElementTree
-        xmllib="cElementTree"
+        xmllib = "cElementTree"
     except ImportError:
         import xml.etree.ElementTree as ElementTree
-        xmllib="ElementTree"
+        xmllib = "ElementTree"
 try:
     import cStringIO as StringIO
 except ImportError:
-    import StringIO
+    try:
+        import StringIO
+    except ImportError:
+        import io as StringIO
 try:
     import hashlib
-    hashes=True
+    hashes = True
 except ImportError:
-    hashes=False
+    hashes = False
+
 
 import Fourthorder_core
 from Fourthorder_common import *
@@ -54,13 +63,13 @@ def read_POSCAR(directory):
         nruter=dict()
         nruter["lattvec"]=np.empty((3,3))
         f=open("POSCAR","r")
-        firstline=f.next()
-        factor=.1*float(f.next().strip())
+        firstline=next(f)
+        factor=.1*float(next(f).strip())
         for i in xrange(3):
-            nruter["lattvec"][:,i]=[float(j) for j in f.next().split()]
+            nruter["lattvec"][:,i]=[float(j) for j in next(f).split()]
         nruter["lattvec"]*=factor
-        line=f.next()
-        fields=f.next().split()
+        line=next(f)
+        fields=next(f).split()
         old=False
         try:
             int(fields[0])
@@ -74,11 +83,11 @@ def read_POSCAR(directory):
             nruter["elements"]=line.split()
             nruter["numbers"]=np.array([int(i) for i in fields],
                                        dtype=np.intc)
-            typeline=f.next()
+            typeline=next(f)
         natoms=nruter["numbers"].sum()
         nruter["positions"]=np.empty((3,natoms))
         for i in xrange(natoms):
-            nruter["positions"][:,i]=[float(j) for j in f.next().split()]
+            nruter["positions"][:,i]=[float(j) for j in next(f).split()]
         f.close()
     nruter["types"]=[]
     for i in xrange(len(nruter["numbers"])):
@@ -106,13 +115,17 @@ def write_POSCAR(poscar,filename):
         f.write("{0[0]:>20.15f} {0[1]:>20.15f} {0[2]:>20.15f}\n".format(
             poscar["positions"][:,i].tolist()))
     if hashes:
-        header=hashlib.sha1(f.getvalue()).hexdigest()
+        toencode = f.getvalue()
+        if sys.hexversion >= 0x3000000:
+            toencode = toencode.encode("utf-8")
+        header = hashlib.sha1(toencode).hexdigest()
     else:
-        header=filename
-    with open(filename,"w") as finalf:
+        header = filename
+    with open(filename, "w") as finalf:
         finalf.write("{0}\n".format(header))
         finalf.write(f.getvalue())
     f.close()
+
 
 
 def normalize_SPOSCAR(sposcar):
@@ -182,54 +195,54 @@ if __name__=="__main__":
             sys.exit("Error: invalid cutoff")
         if frange==0.:
             sys.exit("Error: invalid cutoff")
-    print "Reading POSCAR"
+    print("Reading POSCAR")
     poscar=read_POSCAR(".")
     natoms=len(poscar["types"])
-    print "Analyzing the symmetries"
+    print("Analyzing the symmetries")
     symops=Fourthorder_core.SymmetryOperations(
         poscar["lattvec"],poscar["types"],
         poscar["positions"].T,SYMPREC)
-    print "- Symmetry group {0} detected".format(symops.symbol)
-    print "- {0} symmetry operations".format(symops.translations.shape[0])
-    print "Creating the supercell"
+    print("- Symmetry group {0} detected".format(symops.symbol))
+    print("- {0} symmetry operations".format(symops.translations.shape[0]))
+    print("Creating the supercell")
     sposcar=gen_SPOSCAR(poscar,na,nb,nc)
     ntot=natoms*na*nb*nc
     ngrid=[na,nb,nc]
-    print "Computing all distances in the supercell"
+    print("Computing all distances in the supercell")
     dmin,nequi,shifts=calc_dists(sposcar)
     if nneigh!=None:
         frange=calc_frange(poscar,sposcar,nneigh,dmin)
-        print "- Automatic cutoff: {0} nm".format(frange)
+        print("- Automatic cutoff: {0} nm".format(frange))
     else:
-        print "- User-defined cutoff: {0} nm".format(frange)
-    print "Looking for an irreducible set of fourth-order IFCs"
+        print("- User-defined cutoff: {0} nm".format(frange))
+    print("Looking for an irreducible set of fourth-order IFCs")
     wedge=Fourthorder_core.Wedge(poscar,sposcar,symops,dmin,
                                 nequi,shifts,frange)
-    print "- {0} quartet equivalence classes found".format(wedge.nlist)
+    print("- {0} quartet equivalence classes found".format(wedge.nlist))
     list6=wedge.build_list4()
     nirred=len(list6)
   #  print np.shape(list6),list6
     nruns=8*nirred
-    print "- {0} DFT runs are needed".format(nruns)
+    print("- {0} DFT runs are needed".format(nruns))
     if action=="sow":
-        print sowblock
-        print "Writing undisplaced coordinates to 4TH.SPOSCAR"
+        print(sowblock)
+        print("Writing undisplaced coordinates to 4TH.SPOSCAR")
         write_POSCAR(normalize_SPOSCAR(sposcar),"4TH.SPOSCAR")
-      #  print "Write coordinations to xyz.txt"
+      #  print("Write coordinations to xyz.txt")
       #  write_pos(sposcar,ngrid,natoms,"xyz.txt")
-      #  print "Output cell+atom indices from supercell indices"
+      #  print("Output cell+atom indices from supercell indices")
       #  id2ind(ngrid,natoms,"cellbasismap.txt")
-      #  print "Output cell+atom indices for each quartet"
+      #  print("Output cell+atom indices for each quartet")
       #  write_indexcell(ngrid,poscar,sposcar,dmin,nequi,shifts,frange,"indexfull.txt")
         width=len(str(8*(len(list6)+1)))
         namepattern="4TH.POSCAR.{{0:0{0}d}}".format(width)
-        print "Writing displaced coordinates to 4TH.POSCAR.*"
+        print("Writing displaced coordinates to 4TH.POSCAR.*")
         for i,e in enumerate(list6):
             for n in xrange(8):
                 isign=(-1)**(n//4)
                 jsign=(-1)**(n%4//2)
                 ksign=(-1)**(n%2)
-                # print e[2],e[5],isign,e[1],e[4],jsign,e[0],e[3],ksign
+                # print(e[2],e[5],isign,e[1],e[4],jsign,e[0],e[3],ksign)
                 # Start numbering the files at 1 for aesthetic
                 # reasons.
                 number=nirred*n+i+1
@@ -241,9 +254,9 @@ if __name__=="__main__":
                 filename=namepattern.format(number)
                 write_POSCAR(dsposcar,filename)
     else:
-        print reapblock
-        print "XML ElementTree implementation: {0}".format(xmllib)
-        print "Waiting for a list of vasprun.xml files on stdin"
+        print(reapblock)
+        print("XML ElementTree implementation: {0}".format(xmllib))
+        print("Waiting for a list of vasprun.xml files on stdin")
         filelist=[]
         for l in sys.stdin:
             s=l.strip()
@@ -251,7 +264,7 @@ if __name__=="__main__":
                 continue
             filelist.append(s)
         nfiles=len(filelist)
-        print "- {0} filenames read".format(nfiles)
+        print("- {0} filenames read".format(nfiles))
         if nfiles!=nruns:
             sys.exit("Error: {0} filenames were expected".
                      format(nruns))
@@ -259,16 +272,16 @@ if __name__=="__main__":
             if not os.path.isfile(i):
                 sys.exit("Error: {0} is not a regular file".
                          format(i))
-        print "Reading the forces"
+        print("Reading the forces")
         p=build_unpermutation(sposcar)
         forces=[]
         for i in filelist:
             forces.append(read_forces(i)[p,:])
-            print "- {0} read successfully".format(i)
+            print("- {0} read successfully".format(i))
             res=forces[-1].mean(axis=0)
-            print "- \t Average force:"
-            print "- \t {0} eV/(A * atom)".format(res)
-        print "Computing an irreducible set of anharmonic force constants"
+            print("- \t Average force:")
+            print("- \t {0} eV/(A * atom)".format(res))
+        print("Computing an irreducible set of anharmonic force constants")
         phipart=np.zeros((3,nirred,ntot))
         for i,e in enumerate(list6):
             for n in xrange(8):
@@ -278,9 +291,9 @@ if __name__=="__main__":
                 number=nirred*n+i
                 phipart[:,i,:]-=isign*jsign*ksign*forces[number].T
         phipart/=(8000.*H*H*H)
-        print "Reconstructing the full array"
+        print("Reconstructing the full array")
         phifull=Fourthorder_core.reconstruct_ifcs(phipart,wedge,list6,poscar,sposcar)
-        print "Writing the constants to FORCE_CONSTANTS_4TH"
+        print("Writing the constants to FORCE_CONSTANTS_4TH")
         write_ifcs(phifull,poscar,sposcar,dmin,nequi,shifts,frange,"FORCE_CONSTANTS_4TH")
   #      check_ASRs(phifull,poscar,sposcar,"ASRs.txt")
-    print doneblock
+    print(doneblock)

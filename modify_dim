@@ -1,0 +1,3 @@
+ vi ~/anaconda3/pkgs/cython-0.29.21-py38he6710b0_0/lib/python3.8/site-packages/Cython/Compiler/Options.py
+buffer_max_dims = 10
+

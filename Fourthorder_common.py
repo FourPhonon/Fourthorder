@@ -19,6 +19,11 @@
 #
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
+from __future__ import print_function
+try:
+    xrange
+except NameError:
+    xrange = range
 
 import sys
 import os
@@ -29,12 +34,15 @@ import contextlib
 try:
     import cStringIO as StringIO
 except ImportError:
-    import StringIO
+    try:
+        import StringIO
+    except ImportError:
+        import io as StringIO
 try:
     import hashlib
-    hashes=True
+    hashes = True
 except ImportError:
-    hashes=False
+    hashes = False
 import numpy as np
 import scipy as sp
 import scipy.linalg

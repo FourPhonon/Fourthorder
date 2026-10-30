@@ -20,6 +20,12 @@
 #  You should have received a copy of the GNU General Public License
 #  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+from __future__ import print_function
+try:
+    xrange
+except NameError:
+    xrange = range
+
 import re
 import ast
 
@@ -446,50 +452,50 @@ if __name__=="__main__":
             sys.exit("Error: invalid cutoff")
         if frange==0.:
             sys.exit("Error: invalid cutoff")
-    print "Reading {0}".format(ufilename)
+    print("Reading {0}".format(ufilename))
     poscar=read_qe_in(ufilename)
     natoms=len(poscar["types"])
-    print "Analyzing symmetries"
+    print("Analyzing symmetries")
     symops=Fourthorder_core.SymmetryOperations(
         poscar["lattvec"],poscar["types"],
         poscar["positions"].T,SYMPREC)
-    print "- Symmetry group {0} detected".format(symops.symbol)
-    print "- {0} symmetry operations".format(symops.translations.shape[0])
-    print "Creating the supercell"
+    print("- Symmetry group {0} detected".format(symops.symbol))
+    print("- {0} symmetry operations".format(symops.translations.shape[0]))
+    print("Creating the supercell")
     sposcar=gen_supercell(poscar,na,nb,nc)
     ntot=natoms*na*nb*nc
-    print "Computing all distances in the supercell"
+    print("Computing all distances in the supercell")
     dmin,nequi,shifts=calc_dists(sposcar)
     if nneigh!=None:
         frange=calc_frange(poscar,sposcar,nneigh,dmin)
-        print "- Automatic cutoff: {0} nm".format(frange)
+        print("- Automatic cutoff: {0} nm".format(frange))
     else:
-        print "- User-defined cutoff: {0} nm".format(frange)
-    print "Looking for an irreducible set of fourth-order IFCs"
+        print("- User-defined cutoff: {0} nm".format(frange))
+    print("Looking for an irreducible set of fourth-order IFCs")
     wedge=Fourthorder_core.Wedge(poscar,sposcar,symops,dmin,
                                 nequi,shifts,frange)
-    print "- {0} quartet equivalence classes found".format(wedge.nlist)
+    print("- {0} quartet equivalence classes found".format(wedge.nlist))
     list6=wedge.build_list4()
     nirred=len(list6)
     nruns=8*nirred
-    print "- {0} DFT runs are needed".format(nruns)
+    print("- {0} DFT runs are needed".format(nruns))
     if action=="sow":
-        print sowblock
-        print "Writing undisplaced coordinates to BASE.{0}".format(
-            os.path.basename(sfilename))
+        print(sowblock)
+        print("Writing undisplaced coordinates to BASE.{0}".format(
+            os.path.basename(sfilename)))
         write_supercell(sfilename,sposcar,"BASE.{0}".format(
                 os.path.basename(sfilename)),0)
         width=len(str(8*(len(list6)+1)))
         namepattern="DISP.{0}.{{0:0{1}d}}".format(os.path.basename(sfilename),
                                                 width)
-        print "Writing displaced coordinates to DISP.{0}.*".format(
-            os.path.basename(sfilename))
+        print("Writing displaced coordinates to DISP.{0}.*".format(
+            os.path.basename(sfilename)))
         for i,e in enumerate(list6):
             for n in xrange(8):
                 isign=(-1)**(n//4)
                 jsign=(-1)**(n%4//2)
                 ksign=(-1)**(n%2)
-             #   print e[2],e[5],isign,e[1],e[4],jsign,e[0],e[3],ksign
+             #   print(e[2],e[5],isign,e[1],e[4],jsign,e[0],e[3],ksign)
                 # Start numbering the files at 1 for aesthetic
                 # reasons.
                 number=nirred*n+i+1
@@ -499,8 +505,8 @@ if __name__=="__main__":
                 filename=namepattern.format(number)
                 write_supercell(sfilename,dsposcar,filename,number)
     else:
-        print reapblock
-        print "Waiting for a list of QE output files on stdin"
+        print(reapblock)
+        print("Waiting for a list of QE output files on stdin")
         filelist=[]
         for l in sys.stdin:
             s=l.strip()
@@ -508,7 +514,7 @@ if __name__=="__main__":
                 continue
             filelist.append(s)
         nfiles=len(filelist)
-        print "- {0} filenames read".format(nfiles)
+        print("- {0} filenames read".format(nfiles))
         if nfiles!=nruns:
             sys.exit("Error: {0} filenames were expected".
                      format(nruns))
@@ -516,15 +522,15 @@ if __name__=="__main__":
             if not os.path.isfile(i):
                 sys.exit("Error: {0} is not a regular file".
                          format(i))
-        print "Reading the forces"
+        print("Reading the forces")
         forces=[]
         for i in filelist:
             forces.append(read_forces(i))
-            print "- {0} read successfully".format(i)
+            print("- {0} read successfully".format(i))
             res=forces[-1].mean(axis=0)
-            print "- \t Average residual force:"
-            print "- \t {0} eV/(nm * atom)".format(res)
-        print "Computing an irreducible set of fourth-order force constants"
+            print("- \t Average residual force:")
+            print("- \t {0} eV/(nm * atom)".format(res))
+        print("Computing an irreducible set of fourth-order force constants")
         phipart=np.zeros((3,nirred,ntot))
         for i,e in enumerate(list6):
             for n in xrange(8):
@@ -534,8 +540,8 @@ if __name__=="__main__":
                 number=nirred*n+i
                 phipart[:,i,:]-=isign * jsign * ksign * forces[number].T  
         phipart/=(80000.*H*H*H)
-        print "Reconstructing the full matrix"
+        print("Reconstructing the full matrix")
         phifull=Fourthorder_core.reconstruct_ifcs(phipart,wedge,list6,poscar,sposcar)
-        print "Writing the constants to FORCE_CONSTANTS_4TH"
+        print("Writing the constants to FORCE_CONSTANTS_4TH")
         write_ifcs(phifull,poscar,sposcar,dmin,nequi,shifts,frange,"FORCE_CONSTANTS_4TH")
-    print doneblock
+    print(doneblock)
